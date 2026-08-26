@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Open+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  body{margin:0;background:#f0f3f6;-webkit-font-smoothing:antialiased}
+  *{box-sizing:border-box}
+  a{color:#4F9A2A;text-decoration:none}
+  a:hover{color:#2E5C16;text-decoration:underline}
+  button,input,select,textarea{font:inherit;color:inherit}
+  @keyframes hspulse{0%,100%{opacity:.25;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+</style>
+</helmet>
+
+<div style="display:grid;grid-template-columns:246px minmax(0,1fr);min-height:100vh;max-width:1600px;margin:0 auto;background:#ffffff;font-family:'Open Sans',Helvetica,Arial,sans-serif;font-size:14px;line-height:1.55;color:#101b28">
+
+  <nav style="background:#15170D;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:auto">
+    <div style="background:#ffffff;padding:16px 18px;display:flex;flex-direction:column;gap:8px">
+      <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:26px;letter-spacing:.01em;color:#15170D;line-height:1">BITZER</div>
+      <div style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#4F9A2A">SPOT Assist</div>
+    </div>
+
+    <button onClick="{{ newInquiry }}" style="margin:14px 12px 4px;padding:10px;border-radius:6px;border:1px dashed rgba(255,255,255,.3);background:none;color:#ffffff;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:15px;letter-spacing:.06em;text-transform:uppercase;font-weight:600" style-hover="background:rgba(255,255,255,.09)">+ New Inquiry</button>
+
+    <div style="padding:14px 12px 4px">
+      <h4 style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#93A187;margin:0 0 8px 6px;font-weight:600">Workspace</h4>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <sc-for list="{{ navWork }}" as="n" hint-placeholder-count="4">
+          <button onClick="{{ n.go }}" style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:0;border-radius:6px;text-align:left;cursor:pointer;font-size:13.5px;color:#E4EDE6;background:{{ n.bg }};box-shadow:{{ n.mark }}">{{ n.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="padding:14px 12px 4px">
+      <h4 style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#93A187;margin:0 0 8px 6px;font-weight:600">Administration</h4>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <sc-for list="{{ navAdmin }}" as="n" hint-placeholder-count="2">
+          <button onClick="{{ n.go }}" style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:0;border-radius:6px;text-align:left;cursor:pointer;font-size:13.5px;color:#E4EDE6;background:{{ n.bg }};box-shadow:{{ n.mark }}">{{ n.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="padding:16px 12px 4px">
+      <h4 style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#93A187;margin:0 0 8px 6px;font-weight:600">Recent inquiries</h4>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <sc-for list="{{ history }}" as="h" hint-placeholder-count="3">
+          <button onClick="{{ h.open }}" style="display:block;width:100%;text-align:left;background:none;border:0;color:#CFE0C2;padding:7px 10px;border-radius:6px;cursor:pointer;font-size:12.5px;line-height:1.35" style-hover="background:rgba(255,255,255,.07)">{{ h.q }}<span style="display:block;color:#93A187;font-size:10.5px;margin-top:2px;font-family:'IBM Plex Mono',monospace">{{ h.model }}</span></button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="margin-top:auto;padding:14px 18px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;color:#93A187;line-height:1.5">Prototype · EAi Technologies<br>Content sourced from real, uploaded BITZER documents — answers are scripted for this demo, not live retrieval</div>
+  </nav>
+
+  <div style="display:flex;flex-direction:column;min-width:0">
+    <div id="topbar" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:13px 24px;border-bottom:1px solid #dde5ee;background:#ffffff;position:sticky;top:0;z-index:6">
+      <div>
+        <h1 style="font-family:'Montserrat',sans-serif;font-size:21px;font-weight:600;margin:0;letter-spacing:.01em">{{ paneTitle }}</h1>
+        <div style="font-size:12px;color:#5d7086">{{ paneSub }}</div>
+      </div>
+      <div style="flex:1"></div>
+      <div style="display:flex;border:1px solid #dde5ee;border-radius:100px;overflow:hidden;background:#f3f6fa">
+        <sc-for list="{{ roles }}" as="r" hint-placeholder-count="4">
+          <button onClick="{{ r.pick }}" style="border:0;padding:7px 14px;cursor:pointer;font-size:12.5px;white-space:nowrap;background:{{ r.bg }};color:{{ r.fg }};font-weight:{{ r.fw }}">{{ r.label }}</button>
+        </sc-for>
+      </div>
+      <span style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:#8a5a00;background:#fdf4e3;border:1px solid #e8cfa0;padding:4px 9px;border-radius:100px">Prototype</span>
+    </div>
+    <div style="height:4px;display:flex"><i style="flex:1;background:#15170D"></i><i style="flex:1;background:#2E5C16"></i><i style="flex:1;background:#4F9A2A"></i><i style="flex:1;background:#7ED33F"></i><i style="flex:1;background:#C98A2B"></i></div>
+
+    <sc-if value="{{ isChat }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid;grid-template-columns:{{ chatCols }}">
+        <div style="min-width:0;display:flex;flex-direction:column">
+          <sc-if value="{{ showFaqHero }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:22px 26px 8px;min-height:50vh;max-width:760px">
+              <h2 style="font-family:'Montserrat',sans-serif;font-size:25px;font-weight:700;margin:0 0 8px;letter-spacing:-.01em;text-wrap:balance">Ask about the Octagon compressor family or the IQ Module range</h2>
+              <p style="color:#3d4f61;font-size:14px;line-height:1.6;margin:0 0 4px;max-width:58ch">{{ roleNote }}</p>
+              <p style="font-size:12px;color:#5d7086;margin:0 0 22px">Answers come from the uploaded BITZER SPOT document set only, cited to the page.</p>
+              <div style="display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))">
+                <sc-for list="{{ chips }}" as="c" hint-placeholder-count="4">
+                  <button onClick="{{ c.ask }}" style="text-align:left;border:1px solid #dde5ee;background:#ffffff;border-radius:10px;padding:14px 16px;cursor:pointer" style-hover="border-color:#4F9A2A">
+                    <b style="display:block;font-family:'Montserrat',sans-serif;font-size:13.5px;font-weight:600;color:#101b28">{{ c.t }}</b>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ hasAsked }}">
+          <div style="padding:22px 26px 8px;min-height:50vh">
+            <sc-for list="{{ messages }}" as="m" hint-placeholder-count="2">
+              <div id="msg-{{ m.id }}" style="margin:0 0 20px;display:flex;flex-direction:column">
+
+                <sc-if value="{{ m.isUser }}">
+                  <div style="max-width:640px;align-self:flex-end">
+                    <div style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#5d7086;margin-bottom:6px;text-align:right">{{ m.who }}</div>
+                    <div style="background:#2E5C16;color:#ffffff;padding:11px 15px;border-radius:14px 14px 4px 14px">{{ m.text }}</div>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ m.isThinking }}">
+                  <div style="max-width:800px">
+                    <div style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#5d7086;margin-bottom:6px">BITZER SPOT Assist</div>
+                    <div style="display:flex;gap:7px;align-items:center;color:#5d7086;font-size:13px">
+                      <i style="width:6px;height:6px;border-radius:50%;background:#4F9A2A;animation:hspulse 1.1s infinite"></i>
+                      <i style="width:6px;height:6px;border-radius:50%;background:#4F9A2A;animation:hspulse 1.1s infinite .15s"></i>
+                      <i style="width:6px;height:6px;border-radius:50%;background:#4F9A2A;animation:hspulse 1.1s infinite .3s"></i>
+                      <span style="margin-left:4px">{{ m.text }}</span>
+                    </div>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ m.isAnswer }}">
+                  <div style="max-width:800px">
+                    <div style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#5d7086;margin-bottom:6px;display:flex;gap:8px"><b style="color:#4F9A2A;font-weight:600;letter-spacing:.16em">BITZER SPOT Assist</b><span>{{ m.model }}</span></div>
+                    <div style="background:#ffffff;border:1px solid #dde5ee;border-radius:10px;box-shadow:0 1px 2px rgba(9,26,45,.06),0 10px 26px -16px rgba(9,26,45,.35);overflow:hidden">
+                      <div style="padding:16px 18px">
+                        <ul style="margin:0 0 12px;padding:0;list-style:none;font-size:12.5px;color:#5d7086;font-family:'IBM Plex Mono',monospace;display:flex;flex-direction:column;gap:3px">
+                          <sc-for list="{{ m.pipe }}" as="p" hint-placeholder-count="3">
+                            <li><span style="color:#2E7A16;font-weight:700">✓</span> {{ p.t }}</li>
+                          </sc-for>
+                        </ul>
+                        <h3 style="font-family:'Montserrat',sans-serif;font-size:20px;margin:0 0 8px;font-weight:600;text-wrap:balance">{{ m.title }}</h3>
+                        <p style="margin:0 0 10px;color:#3d4f61;text-wrap:pretty">{{ m.lede }}</p>
+                        <div style="border-left:3px solid #4F9A2A;background:#EAF6DE;padding:10px 13px;border-radius:0 6px 6px 0;font-size:13px;margin:14px 0">
+                          <b style="font-family:'Montserrat',sans-serif;letter-spacing:.1em;text-transform:uppercase;font-size:11px;display:block;margin-bottom:2px">{{ m.roleTitle }}</b>{{ m.roleNote }}
+                        </div>
+
+                        <sc-if value="{{ m.hasSteps }}">
+                          <div>
+                            <h4 style="font-family:'Montserrat',sans-serif;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#5d7086;margin:18px 0 9px;font-weight:600">Procedure</h4>
+                            <ol style="list-style:none;margin:0;padding:0">
+                              <sc-for list="{{ m.steps }}" as="s" hint-placeholder-count="4">
+                                <li style="position:relative;padding:0 0 13px 36px">
+                                  <span style="position:absolute;left:0;top:1px;width:23px;height:23px;border-radius:50%;background:#EAF6DE;color:#2E5C16;font-family:'IBM Plex Mono',monospace;font-size:11px;display:grid;place-items:center;font-weight:500">{{ s.n }}</span>
+                                  <b style="display:block;font-weight:600">{{ s.t }}</b>
+                                  <em style="font-style:normal;color:#5d7086;font-size:13px;display:block;margin-top:2px;text-wrap:pretty">{{ s.d }}</em>
+                                </li>
+                              </sc-for>
+                            </ol>
+                          </div>
+                        </sc-if>
+
+                        <sc-if value="{{ m.hasKv }}">
+                          <div>
+                            <h4 style="font-family:'Montserrat',sans-serif;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#5d7086;margin:18px 0 9px;font-weight:600">Reference values</h4>
+                            <div style="display:grid;grid-template-columns:auto 1fr;gap:5px 16px;font-size:13px">
+                              <sc-for list="{{ m.kv }}" as="k" hint-placeholder-count="4">
+                                <div style="display:contents"><div style="color:#5d7086">{{ k.k }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:12.5px">{{ k.v }}</div></div>
+                              </sc-for>
+                            </div>
+                          </div>
+                        </sc-if>
+
+                        <sc-for list="{{ m.notes }}" as="nt" hint-placeholder-count="1">
+                          <div style="border-left:3px solid {{ nt.bd }};background:{{ nt.bg }};padding:10px 13px;border-radius:0 6px 6px 0;font-size:13px;margin:14px 0 0">
+                            <b style="font-family:'Montserrat',sans-serif;letter-spacing:.1em;text-transform:uppercase;font-size:11px;display:block;margin-bottom:2px">{{ nt.t }}</b>{{ nt.d }}
+                          </div>
+                        </sc-for>
+                      </div>
+
+                      <div style="display:flex;flex-wrap:wrap;gap:8px;padding:12px 18px;border-top:1px solid #e8eef5;background:#f5f8fb">
+                        <sc-for list="{{ m.cites }}" as="c" hint-placeholder-count="2">
+                          <button onClick="{{ c.open }}" style="display:inline-flex;align-items:center;gap:7px;border:1px solid #dde5ee;background:#ffffff;border-radius:100px;padding:5px 11px;font-size:11.5px;cursor:pointer;color:#3d4f61" style-hover="border-color:#4F9A2A;color:#4F9A2A">{{ c.doc }}<code style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#5d7086">{{ c.ref }}</code></button>
+                        </sc-for>
+                      </div>
+                      <div style="display:flex;gap:8px;flex-wrap:wrap;padding:12px 18px;border-top:1px solid #e8eef5">
+                        <button onClick="{{ actSendPhone }}" style="border:1px solid #2E5C16;background:#2E5C16;color:#ffffff;border-radius:6px;padding:6px 12px;font-size:12.5px;cursor:pointer">Send to my phone</button>
+                        <button onClick="{{ actOrder }}" style="border:1px solid #dde5ee;background:#ffffff;border-radius:6px;padding:6px 12px;font-size:12.5px;cursor:pointer;color:#3d4f61" style-hover="border-color:#4F9A2A;color:#4F9A2A">Open in ePARTS</button>
+                        <button onClick="{{ actEscalate }}" style="border:1px solid #dde5ee;background:#ffffff;border-radius:6px;padding:6px 12px;font-size:12.5px;cursor:pointer;color:#3d4f61" style-hover="border-color:#4F9A2A;color:#4F9A2A">Escalate to BITZER service</button>
+                        <button onClick="{{ actHelpful }}" style="border:1px solid #dde5ee;background:#ffffff;border-radius:6px;padding:6px 12px;font-size:12.5px;cursor:pointer;color:#3d4f61" style-hover="border-color:#4F9A2A;color:#4F9A2A">This helped</button>
+                      </div>
+                    </div>
+                  </div>
+                </sc-if>
+
+              </div>
+            </sc-for>
+          </div>
+          </sc-if>
+
+          <div style="position:sticky;bottom:0;background:#ffffff;border-top:1px solid #dde5ee;padding:13px 26px 18px;margin-top:auto">
+            <sc-if value="{{ hasAsked }}">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:11px">
+              <sc-for list="{{ chips }}" as="c" hint-placeholder-count="4">
+                <button onClick="{{ c.ask }}" style="border:1px solid #dde5ee;background:#f3f6fa;border-radius:100px;padding:7px 13px;font-size:12.5px;cursor:pointer;color:#3d4f61;text-align:left" style-hover="border-color:#4F9A2A;color:#4F9A2A">{{ c.t }}</button>
+              </sc-for>
+            </div>
+            </sc-if>
+            <div style="display:flex;gap:10px;align-items:flex-end">
+              <textarea rows="1" placeholder="Describe the fault, or paste a compressor model / serial number…" value="{{ query }}" onChange="{{ onQuery }}" onKeyDown="{{ onKey }}" style="flex:1;resize:none;border:1px solid #dde5ee;border-radius:9px;padding:11px 13px;background:#f7f9fc;min-height:46px;max-height:150px;font-family:'Open Sans',sans-serif"></textarea>
+              <button onClick="{{ send }}" style="background:#2E5C16;color:#ffffff;border:0;border-radius:9px;padding:0 20px;height:46px;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:16px;letter-spacing:.06em;text-transform:uppercase;font-weight:600">Ask</button>
+            </div>
+            <div style="font-size:11px;color:#5d7086;margin-top:9px">Answers come from BITZER SPOT documentation and BITZER-supplied components only. Anything outside that library is flagged, never guessed.</div>
+          </div>
+        </div>
+
+        <sc-if value="{{ hasAsked }}" hint-placeholder-val="{{ true }}">
+        <aside style="border-left:1px solid #dde5ee;background:#f5f8fb;padding:20px;display:flex;flex-direction:column;gap:18px">
+          <div>
+            <h4 style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#5d7086;margin:0 0 9px;font-weight:600">Equipment in context</h4>
+            <div style="background:#ffffff;border:1px solid #dde5ee;border-radius:9px;padding:14px">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#5d7086;letter-spacing:.04em">NAMEPLATE MODEL</div>
+              <div style="font-family:'Montserrat',sans-serif;font-size:22px;font-weight:700;margin:1px 0 2px">{{ unit.model }}</div>
+              <div style="font-size:12.5px;color:#5d7086">{{ unit.family }}</div>
+              <div style="font-size:12.5px;color:#5d7086;margin-top:6px">{{ unit.line }}</div>
+              <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:11px">
+                <sc-for list="{{ unitTags }}" as="t" hint-placeholder-count="3">
+                  <span style="font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;padding:3px 8px;border-radius:4px;background:#EAF6DE;color:#2E5C16">{{ t.t }}</span>
+                </sc-for>
+              </div>
+              <div style="margin-top:12px">
+                <sc-for list="{{ unitStats }}" as="s" hint-placeholder-count="4">
+                  <div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px dashed #e3eaf2"><span style="color:#5d7086;font-size:12.5px">{{ s.k }}</span><b style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500">{{ s.v }}</b></div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h4 style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#5d7086;margin:0 0 9px;font-weight:600">Change equipment</h4>
+            <select onChange="{{ onUnit }}" value="{{ unitId }}" style="width:100%;border:1px solid #dde5ee;background:#ffffff;border-radius:6px;padding:9px 10px">
+              <sc-for list="{{ equipment }}" as="e" hint-placeholder-count="6">
+                <option value="{{ e.id }}">{{ e.optLabel }}</option>
+              </sc-for>
+            </select>
+          </div>
+          <div>
+            <h4 style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#5d7086;margin:0 0 9px;font-weight:600">Panel / install site</h4>
+            <select style="width:100%;border:1px solid #dde5ee;background:#ffffff;border-radius:6px;padding:9px 10px">
+              <option>OEM Panel Shop — Rack Line 3</option>
+              <option>Industrial Cold Storage Plant — Compressor Room 2</option>
+              <option>Beverage Bottling Plant — Utility Room</option>
+              <option>District Cooling Plant — Chiller Hall B</option>
+            </select>
+          </div>
+          <div>
+            <h4 style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#5d7086;margin:0 0 9px;font-weight:600">Retrieval scope (uploaded documents)</h4>
+            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #e3eaf2"><span style="color:#5d7086;font-size:12.5px">Documents uploaded</span><b style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500">6</b></div>
+            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #e3eaf2"><span style="color:#5d7086;font-size:12.5px">Pages indexed</span><b style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500">454</b></div>
+            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #e3eaf2"><span style="color:#5d7086;font-size:12.5px">IQ Module range (CM-RC-02 / CM-IO-A / CM-IO-B)</span><b style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500">Included</b></div>
+            <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="color:#5d7086;font-size:12.5px">Baseline: myBITZER support requests</span><b style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500">Not yet published</b></div>
+          </div>
+          <div>
+            <h4 style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#5d7086;margin:0 0 9px;font-weight:600">This unit's open items</h4>
+            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #e3eaf2"><span style="color:#5d7086;font-size:12.5px"><i style="display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;background:#b3261e"></i>CM-RC-02 Bluetooth password not yet changed</span><b style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500">open</b></div>
+            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #e3eaf2"><span style="color:#5d7086;font-size:12.5px"><i style="display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;background:#b7791f"></i>Firmware below 2.1 — VARIPACK unavailable</span><b style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500">2d</b></div>
+            <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="color:#5d7086;font-size:12.5px"><i style="display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;background:#2E7A16"></i>Commissioning checklist completed</span><b style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500">11d</b></div>
+          </div>
+        </aside>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isDoc }}">
+      <div style="padding:26px 30px 40px;max-width:1060px">
+        <div style="font-size:11.5px;color:#5d7086;font-family:'Open Sans',sans-serif;margin-bottom:14px">Products <span style="color:#c2ccd8">/</span> {{ dp.badge }} <span style="color:#c2ccd8">/</span> {{ unit.family }}</div>
+
+        <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
+          <div>
+            <h2 style="font-family:'Montserrat',sans-serif;font-size:32px;font-weight:700;margin:0;letter-spacing:-.01em;line-height:1.1">{{ unit.model }}</h2>
+            <div style="font-family:'Montserrat',sans-serif;font-size:17px;font-weight:500;color:#2E5C16;margin-top:4px">{{ dp.tagline }}</div>
+          </div>
+          <span style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:#ffffff;background:#C98A2B;padding:5px 10px;border-radius:3px;margin-top:6px">{{ dp.badge }}</span>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 22px">
+          <sc-for list="{{ unitTags }}" as="t" hint-placeholder-count="3">
+            <span style="font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;padding:4px 9px;border-radius:3px;background:#EAF6DE;color:#2E5C16">{{ t.t }}</span>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;gap:22px;grid-template-columns:minmax(0,1.35fr) minmax(240px,.65fr);align-items:start">
+          <div>
+            <h3 style="font-family:'Montserrat',sans-serif;font-size:20px;font-weight:700;margin:0 0 8px">Product Details</h3>
+            <p style="margin:0;color:#3d4f61;font-size:14.5px;line-height:1.65;text-wrap:pretty">{{ dp.details }}</p>
+
+            <h4 style="font-family:'Montserrat',sans-serif;font-size:15.5px;font-weight:700;margin:26px 0 10px">Key Features</h4>
+            <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ dpFeatures }}" as="f" hint-placeholder-count="5">
+                <li style="display:flex;gap:11px;align-items:flex-start;font-size:14px;color:#3d4f61"><i style="width:6px;height:6px;border-radius:1px;background:#4F9A2A;flex:0 0 6px;margin-top:7px"></i><span style="text-wrap:pretty">{{ f.t }}</span></li>
+              </sc-for>
+            </ul>
+
+            <h4 style="font-family:'Montserrat',sans-serif;font-size:15.5px;font-weight:700;margin:26px 0 10px">Benefits</h4>
+            <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ dpBenefits }}" as="b" hint-placeholder-count="4">
+                <li style="display:flex;gap:11px;align-items:flex-start;font-size:14px;color:#3d4f61"><i style="width:6px;height:6px;border-radius:1px;background:#C98A2B;flex:0 0 6px;margin-top:7px"></i><span style="text-wrap:pretty">{{ b.t }}</span></li>
+              </sc-for>
+            </ul>
+          </div>
+
+          <div style="background:#f5f8fb;border:1px solid #dde5ee;border-radius:9px;padding:16px 18px">
+            <h4 style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#5d7086;margin:0 0 12px;font-weight:700">Specification</h4>
+            <sc-for list="{{ unitStats }}" as="s" hint-placeholder-count="4">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px dashed #e3eaf2"><span style="color:#5d7086;font-size:12.5px">{{ s.k }}</span><b style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500">{{ s.v }}</b></div>
+            </sc-for>
+            <button onClick="{{ dpAsk }}" style="width:100%;margin-top:16px;background:#2E5C16;color:#ffffff;border:0;border-radius:5px;padding:11px;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:700">Ask about this product</button>
+          </div>
+        </div>
+
+        <div style="height:2px;background:#dde5ee;margin:32px 0 24px"></div>
+
+        <h3 style="font-family:'Montserrat',sans-serif;font-size:20px;font-weight:700;margin:0 0 14px">Downloadable Resources</h3>
+        <div style="display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))">
+          <sc-for list="{{ dpResources }}" as="r" hint-placeholder-count="4">
+            <button onClick="{{ r.open }}" style="display:flex;gap:13px;align-items:center;background:#ffffff;border:1px solid #dde5ee;border-radius:8px;padding:14px;text-align:left;cursor:pointer" style-hover="border-color:#4F9A2A">
+              <span style="flex:0 0 38px;height:46px;border:1.5px solid #2E5C16;border-radius:3px;position:relative;background:#EAF6DE"><i style="position:absolute;left:7px;right:7px;top:11px;height:2px;background:#2E5C16;opacity:.55"></i><i style="position:absolute;left:7px;right:7px;top:19px;height:2px;background:#2E5C16;opacity:.55"></i><i style="position:absolute;left:7px;right:14px;top:27px;height:2px;background:#2E5C16;opacity:.55"></i></span>
+              <span><b style="display:block;font-family:'Montserrat',sans-serif;font-size:13.5px;font-weight:600;line-height:1.3">{{ r.t }}</b><code style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#5d7086">{{ r.pn }}</code></span>
+            </button>
+          </sc-for>
+        </div>
+
+        <p style="font-size:11.5px;color:#5d7086;margin:22px 0 0;max-width:70ch">Prototype — document titles and part/document numbers above are drawn from the real uploaded BITZER technical information. In the live build each card links to the actual PDF, and the assistant cites these same documents by page, as it does in this demo.</p>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isFleet }}">
+      <div style="padding:24px">
+        <h2 style="font-family:'Montserrat',sans-serif;font-size:24px;font-weight:600;margin:0 0 4px">Equipment Lookup</h2>
+        <p style="color:#5d7086;margin:0 0 18px;max-width:62ch;text-wrap:pretty">Scan the QR code, type a model, or pick a line. The assistant resolves the model to its product family and loads only that family's documentation before answering — the same resolution SPOT already performs from the nameplate.</p>
+        <input placeholder="Nameplate model, serial, or QR payload (try: 4FDC, 4CDC, 4NDC)" value="{{ fleetQ }}" onChange="{{ onFleetQ }}" style="width:100%;max-width:470px;border:1px solid #dde5ee;background:#ffffff;border-radius:6px;padding:10px 12px;margin-bottom:18px">
+        <div style="display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))">
+          <sc-for list="{{ fleetList }}" as="e" hint-placeholder-count="6">
+            <button onClick="{{ e.pick }}" style="background:#ffffff;border:1px solid #dde5ee;border-radius:9px;padding:14px;text-align:left;cursor:pointer" style-hover="border-color:#4F9A2A">
+              <div style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:600">{{ e.model }}</div>
+              <div style="font-size:12.5px;color:#5d7086">{{ e.family }}</div>
+              <div style="font-size:12.5px;color:#3d4f61;margin-top:7px">{{ e.line }}</div>
+              <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">
+                <sc-for list="{{ e.tagList }}" as="t" hint-placeholder-count="3">
+                  <span style="font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;padding:3px 8px;border-radius:4px;background:#EAF6DE;color:#2E5C16">{{ t.t }}</span>
+                </sc-for>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:11px;padding-top:9px;border-top:1px dashed #e3eaf2"><span style="color:#5d7086;font-size:12.5px">Primary doc</span><b style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500">{{ e.doc }}</b></div>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isLibrary }}">
+      <div style="padding:24px">
+        <h2 style="font-family:'Montserrat',sans-serif;font-size:24px;font-weight:600;margin:0 0 4px">Document Library</h2>
+        <p style="color:#5d7086;margin:0 0 18px;max-width:62ch;text-wrap:pretty">Operating instructions, technical information sheets and quick-start guides for the Octagon C-series and its IQ Module range. New uploads are ingested, chunked and searchable in minutes — no reindexing window.</p>
+        <button onClick="{{ actUpload }}" style="width:100%;max-width:900px;border:2px dashed #cbd8e6;border-radius:10px;padding:28px;text-align:center;color:#5d7086;background:#ffffff;cursor:pointer;display:block" style-hover="border-color:#4F9A2A;color:#4F9A2A">
+          <b style="display:block;font-family:'Montserrat',sans-serif;font-size:17px;color:#101b28;letter-spacing:.02em">Upload manual, technical information sheet, or quick-start guide</b>
+          PDF only · auto-extraction of figures, tables and terminal designators
+        </button>
+        <div style="height:18px"></div>
+        <div style="overflow-x:auto;border:1px solid #dde5ee;border-radius:9px;background:#ffffff;max-width:1000px">
+          <table style="border-collapse:collapse;width:100%;font-size:13px;min-width:600px">
+            <thead>
+              <tr>
+                <th style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#5d7086;text-align:left;padding:10px 14px;border-bottom:1px solid #dde5ee;font-weight:600">Document</th>
+                <th style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#5d7086;text-align:left;padding:10px 14px;border-bottom:1px solid #dde5ee;font-weight:600">Covers</th>
+                <th style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#5d7086;text-align:left;padding:10px 14px;border-bottom:1px solid #dde5ee;font-weight:600">Doc No.</th>
+                <th style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#5d7086;text-align:left;padding:10px 14px;border-bottom:1px solid #dde5ee;font-weight:600">Pages</th>
+                <th style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#5d7086;text-align:left;padding:10px 14px;border-bottom:1px solid #dde5ee;font-weight:600">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ docs }}" as="d" hint-placeholder-count="6">
+                <tr>
+                  <td style="padding:10px 14px;border-bottom:1px solid #eef3f8">
+                    <span style="display:flex;gap:11px;align-items:center">
+                      <sc-if value="{{ d.hasThumb }}">
+                        <img src="{{ d.thumb }}" alt="" style="flex:0 0 46px;width:46px;height:52px;object-fit:contain;background:#f5f8fb;border:1px solid #dde5ee;border-radius:4px;padding:3px" />
+                      </sc-if>
+                      <span>{{ d.title }}</span>
+                    </span>
+                  </td>
+                  <td style="padding:10px 14px;border-bottom:1px solid #eef3f8;color:#5d7086">{{ d.covers }}</td>
+                  <td style="padding:10px 14px;border-bottom:1px solid #eef3f8;font-family:'IBM Plex Mono',monospace">{{ d.pn }}</td>
+                  <td style="padding:10px 14px;border-bottom:1px solid #eef3f8;font-family:'IBM Plex Mono',monospace">{{ d.pages }}</td>
+                  <td style="padding:10px 14px;border-bottom:1px solid #eef3f8"><span style="font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;padding:3px 8px;border-radius:4px;background:{{ d.bg }};color:{{ d.fg }}">{{ d.status }}</span></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isParts }}">
+      <div style="padding:24px">
+        <h2 style="font-family:'Montserrat',sans-serif;font-size:24px;font-weight:600;margin:0 0 4px">Parts &amp; Diagrams</h2>
+        <p style="color:#5d7086;margin:0 0 18px;max-width:62ch;text-wrap:pretty">Every answer that names a component links to its wiring terminal and the BITZER document that defines it. BITZER doesn't run a public parts storefront the way a case OEM does — spare-parts pricing and ordering happen through ePARTS for registered myBITZER customers, so the tech leaves with the right designator and document reference instead of guessing at a distributor search box.</p>
+        <div style="background:#ffffff;border:1px solid #dde5ee;border-radius:10px;max-width:820px;overflow:hidden">
+          <div style="padding:16px 18px">
+            <h3 style="font-family:'Montserrat',sans-serif;font-size:18px;margin:0 0 6px;font-weight:600">CM-RC-02 / CM-IO-A / CM-IO-B — Component Designators</h3>
+            <p style="color:#5d7086;margin:0">Reference designators below come straight from the wiring diagrams in the IQ Module Technical Information (KT-240-3, KT-241-2, KT-242-2). Extension-board-only components are noted.</p>
+          </div>
+          <div style="overflow-x:auto;border-top:1px solid #eef3f8">
+            <table style="border-collapse:collapse;width:100%;font-size:13px;min-width:620px">
+              <thead>
+                <tr>
+                  <th style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#5d7086;text-align:left;padding:10px 14px;border-bottom:1px solid #dde5ee;font-weight:600">Ref</th>
+                  <th style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#5d7086;text-align:left;padding:10px 14px;border-bottom:1px solid #dde5ee;font-weight:600">Component</th>
+                  <th style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#5d7086;text-align:left;padding:10px 14px;border-bottom:1px solid #dde5ee;font-weight:600">Terminal</th>
+                  <th style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#5d7086;text-align:left;padding:10px 14px;border-bottom:1px solid #dde5ee;font-weight:600">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ partsRows }}" as="p" hint-placeholder-count="6">
+                  <tr>
+                    <td style="padding:10px 14px;border-bottom:1px solid #eef3f8;font-family:'IBM Plex Mono',monospace">{{ p.ref }}</td>
+                    <td style="padding:10px 14px;border-bottom:1px solid #eef3f8">{{ p.name }}</td>
+                    <td style="padding:10px 14px;border-bottom:1px solid #eef3f8;font-family:'IBM Plex Mono',monospace">{{ p.pn }}</td>
+                    <td style="padding:10px 14px;border-bottom:1px solid #eef3f8;color:#5d7086">{{ p.note }}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;padding:13px 18px;border-top:1px solid #eef3f8">
+            <button onClick="{{ actOrder }}" style="border:1px solid #2E5C16;background:#2E5C16;color:#ffffff;border-radius:6px;padding:6px 12px;font-size:12.5px;cursor:pointer">Open in ePARTS</button>
+            <button onClick="{{ actStock }}" style="border:1px solid #dde5ee;background:#ffffff;border-radius:6px;padding:6px 12px;font-size:12.5px;cursor:pointer;color:#3d4f61" style-hover="border-color:#4F9A2A;color:#4F9A2A">Check myBITZER</button>
+            <button onClick="{{ actExploded }}" style="border:1px solid #dde5ee;background:#ffffff;border-radius:6px;padding:6px 12px;font-size:12.5px;cursor:pointer;color:#3d4f61" style-hover="border-color:#4F9A2A;color:#4F9A2A">Open wiring diagram</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isAgent }}">
+      <div style="padding:24px">
+        <h2 style="font-family:'Montserrat',sans-serif;font-size:24px;font-weight:600;margin:0 0 4px">Agent Management</h2>
+        <p style="color:#5d7086;margin:0 0 20px;max-width:62ch;text-wrap:pretty">How a question becomes a trusted answer. Retrieval is fenced to the resolved compressor family, and the guardrail step is what keeps the assistant from inventing a procedure.</p>
+        <div style="display:grid;gap:10px;max-width:900px;margin-bottom:24px">
+          <sc-for list="{{ pipeline }}" as="s" hint-placeholder-count="5">
+            <div style="display:flex;gap:14px;align-items:flex-start;background:#ffffff;border:1px solid #dde5ee;border-left:4px solid {{ s.accent }};border-radius:8px;padding:14px 16px">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#2E5C16;background:#EAF6DE;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;flex:0 0 26px;font-weight:500">{{ s.n }}</div>
+              <div>
+                <b style="font-family:'Montserrat',sans-serif;font-size:16px;letter-spacing:.01em">{{ s.t }}</b>
+                <div style="color:#5d7086;font-size:13px;margin-top:2px;text-wrap:pretty">{{ s.d }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));max-width:1000px">
+          <div style="background:#ffffff;border:1px solid #dde5ee;border-radius:10px;padding:16px 18px">
+            <h3 style="font-family:'Montserrat',sans-serif;font-size:18px;margin:0 0 10px;font-weight:600">Guardrails</h3>
+            <sc-for list="{{ guardrails }}" as="g" hint-placeholder-count="4">
+              <label style="display:flex;align-items:flex-start;gap:11px;padding:11px 0;border-bottom:1px solid #eef3f8">
+                <input type="checkbox" checked="{{ g.on }}" onChange="{{ g.toggle }}" style="margin-top:4px;accent-color:#2E5C16;width:16px;height:16px">
+                <span><b style="display:block;font-weight:600">{{ g.t }}</b><em style="font-style:normal;color:#5d7086;font-size:12.5px">{{ g.d }}</em></span>
+              </label>
+            </sc-for>
+          </div>
+          <div style="background:#ffffff;border:1px solid #dde5ee;border-radius:10px;padding:16px 18px">
+            <h3 style="font-family:'Montserrat',sans-serif;font-size:18px;margin:0 0 10px;font-weight:600">Model routing &amp; performance</h3>
+            <sc-for list="{{ routing }}" as="r" hint-placeholder-count="6">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px dashed #e3eaf2"><span style="color:#5d7086;font-size:12.5px">{{ r.k }}</span><b style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500">{{ r.v }}</b></div>
+            </sc-for>
+            <h4 style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#5d7086;margin:18px 0 6px;font-weight:600">Escalation</h4>
+            <p style="margin:0;color:#5d7086;font-size:13px;text-wrap:pretty">Unanswerable inquiries route to a BITZER Service Point — found through the SPOT app locator — with the full transcript, the resolved compressor model, the IQ Module alarm log, and the documents already searched attached, instead of a single generic hotline.</p>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isUsers }}">
+      <div style="padding:24px">
+        <h2 style="font-family:'Montserrat',sans-serif;font-size:24px;font-weight:600;margin:0 0 4px">User Access</h2>
+        <p style="color:#5d7086;margin:0 0 18px;max-width:62ch;text-wrap:pretty">One assistant, four audiences. Access level controls which documents are reachable and how much procedural depth an answer carries.</p>
+        <div style="overflow-x:auto;border:1px solid #dde5ee;border-radius:9px;background:#ffffff;max-width:1000px">
+          <table style="border-collapse:collapse;width:100%;font-size:13px;min-width:640px">
+            <thead>
+              <tr>
+                <th style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#5d7086;text-align:left;padding:10px 14px;border-bottom:1px solid #dde5ee;font-weight:600">User</th>
+                <th style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#5d7086;text-align:left;padding:10px 14px;border-bottom:1px solid #dde5ee;font-weight:600">Organization</th>
+                <th style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#5d7086;text-align:left;padding:10px 14px;border-bottom:1px solid #dde5ee;font-weight:600">Role</th>
+                <th style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#5d7086;text-align:left;padding:10px 14px;border-bottom:1px solid #dde5ee;font-weight:600">Document scope</th>
+                <th style="font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#5d7086;text-align:left;padding:10px 14px;border-bottom:1px solid #dde5ee;font-weight:600">Last active</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ users }}" as="u" hint-placeholder-count="5">
+                <tr>
+                  <td style="padding:10px 14px;border-bottom:1px solid #eef3f8">{{ u.name }}</td>
+                  <td style="padding:10px 14px;border-bottom:1px solid #eef3f8;color:#5d7086">{{ u.org }}</td>
+                  <td style="padding:10px 14px;border-bottom:1px solid #eef3f8">{{ u.role }}</td>
+                  <td style="padding:10px 14px;border-bottom:1px solid #eef3f8;color:#5d7086">{{ u.scope }}</td>
+                  <td style="padding:10px 14px;border-bottom:1px solid #eef3f8;font-family:'IBM Plex Mono',monospace">{{ u.last }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+        <div style="height:16px"></div>
+        <div style="display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));max-width:1000px">
+          <button onClick="{{ actInvite }}" style="background:#ffffff;border:1px solid #dde5ee;border-radius:9px;padding:14px;text-align:left;cursor:pointer" style-hover="border-color:#4F9A2A"><div style="font-family:'Montserrat',sans-serif;font-size:17px;font-weight:600">Invite user</div><div style="font-size:12.5px;color:#5d7086">Email invite scoped to a role</div></button>
+          <button onClick="{{ actSso }}" style="background:#ffffff;border:1px solid #dde5ee;border-radius:9px;padding:14px;text-align:left;cursor:pointer" style-hover="border-color:#4F9A2A"><div style="font-family:'Montserrat',sans-serif;font-size:17px;font-weight:600">SSO mapping</div><div style="font-size:12.5px;color:#5d7086">Map myBITZER IdP groups to roles</div></button>
+          <button onClick="{{ actExport }}" style="background:#ffffff;border:1px solid #dde5ee;border-radius:9px;padding:14px;text-align:left;cursor:pointer" style-hover="border-color:#4F9A2A"><div style="font-family:'Montserrat',sans-serif;font-size:17px;font-weight:600">Usage export</div><div style="font-size:12.5px;color:#5d7086">Questions asked, documentation gaps found</div></button>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</div>
+
+<sc-if value="{{ hasToast }}">
+  <div style="position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#15170D;color:#ffffff;padding:11px 18px;border-radius:100px;font-size:13px;z-index:40;font-family:'Open Sans',sans-serif;box-shadow:0 10px 30px -12px rgba(9,26,45,.6)">{{ toast }}</div>
+</sc-if>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultRole&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;install&quot;,&quot;service&quot;,&quot;panel&quot;,&quot;customer&quot;],&quot;default&quot;:&quot;service&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Behavior&quot;}}">
+
+const EQUIP = [
+  {id:"4fdc5y",model:"4FDC-5Y",family:"Octagon Series — 4-Cylinder Semi-Hermetic Reciprocating Compressor (Housing Size 3)",temp:"Medium/high evaporating temperature (R410A per ARI 540, 60 Hz)",ref:"R410A, R32, R454B, R452B — oil BSE55 (KB-100-2 §3.4)",ctrl:"IQ Module CM-RC-02 (standard); CM-IO-A / CM-IO-B extension boards optional",doc:"KP-106-2 / KB-100-2",disp:"529 CFH",cap:"78,300 BTUH / 4.12 kW",line:"Smallest Octagon C-series model — 529 CFH displacement at 1750 RPM, 5/8\" discharge, 7/8\" suction connection",tags:["Octagon","Housing Size 3","R410A / R32"]},
+  {id:"4edc6y",model:"4EDC-6Y",family:"Octagon Series — 4-Cylinder Semi-Hermetic Reciprocating Compressor (Housing Size 3)",temp:"Medium/high evaporating temperature (R410A per ARI 540, 60 Hz)",ref:"R410A, R32, R454B, R452B — oil BSE55 (KB-100-2 §3.4)",ctrl:"IQ Module CM-RC-02 (standard); CM-IO-A / CM-IO-B extension boards optional",doc:"KP-106-2 / KB-100-2",disp:"666 CFH",cap:"99,100 BTUH / 5.12 kW",line:"666 CFH displacement at 1750 RPM, 5/8\" discharge, 1-1/8\" suction connection",tags:["Octagon","Housing Size 3","R410A / R32"]},
+  {id:"4cdc9y",model:"4CDC-9Y",family:"Octagon Series — 4-Cylinder Semi-Hermetic Reciprocating Compressor (Housing Size 3)",temp:"Medium/high evaporating temperature (R410A per ARI 540, 60 Hz)",ref:"R410A, R32, R454B, R452B — oil BSE55 (KB-100-2 §3.4)",ctrl:"IQ Module CM-RC-02 (standard); CM-IO-A / CM-IO-B extension boards optional",doc:"KP-106-2 / KB-100-2",disp:"952 CFH",cap:"140,400 BTUH / 7.28 kW",line:"Largest housing-size-3 Octagon model — 952 CFH displacement, 7/8\" discharge, 1-1/8\" suction connection",tags:["Octagon","Housing Size 3","R410A / R32"]},
+  {id:"4vdc10y",model:"4VDC-10Y",family:"Octagon Series — 4-Cylinder Semi-Hermetic Reciprocating Compressor (Housing Size 4)",temp:"Medium/high evaporating temperature (R410A per ARI 540, 60 Hz)",ref:"R410A, R32, R454B, R452B — oil BSE55 (KB-100-2 §3.4)",ctrl:"IQ Module CM-RC-02 (standard); CM-IO-A / CM-IO-B extension boards optional",doc:"KP-106-2 / KB-100-2",disp:"1233 CFH",cap:"185,100 BTUH / 9.24 kW",line:"Smallest housing-size-4 Octagon model — 1233 CFH displacement, dual-voltage 9-lead motor",tags:["Octagon","Housing Size 4","R410A / R32"]},
+  {id:"4ndc20y",model:"4NDC-20Y",family:"Octagon Series — 4-Cylinder Semi-Hermetic Reciprocating Compressor (Housing Size 4)",temp:"Medium/high evaporating temperature (R410A per ARI 540, 60 Hz)",ref:"R410A, R32, R454B, R452B — oil BSE55 (KB-100-2 §3.4)",ctrl:"IQ Module CM-RC-02 (standard); CM-IO-A / CM-IO-B extension boards optional",doc:"KP-106-2 / KB-100-2",disp:"1998 CFH",cap:"312,600 BTUH / 16.04 kW",line:"Largest Octagon C-series model — 1998 CFH displacement, 1-1/8\" discharge, 1-3/8\" suction connection",tags:["Octagon","Housing Size 4","R410A / R32"]}
+];
+
+const DOCS = [
+  ["Semi-hermetic reciprocating compressors — Operating Instructions (2KES-05(Y) .. 8FE-70(Y), incl. Octagon C-series 4FDC-5Y .. 4NDC-20Y)","All semi-hermetic reciprocating compressor series, including the Octagon C-series","KB-100-2",188,"Indexed"],
+  ["OCTAGON Series for R410A — 60 Hz Technical Datasheet","Octagon R410A line, 4FDC-5Y .. 4NDC-20Y","KP-106-2",8,"Indexed"],
+  ["Compressor module for reciprocating compressors — IQ MODULE CM-RC-02 — Technical Information","CM-RC-02 IQ Module, all reciprocating compressor series","KT-240-3",100,"Indexed"],
+  ["Extension board A (CM-IO-A ADVANCED) for compressor module CM-RC-02 — Technical Information","CM-IO-A — capacity control, RI system, OLM-IQ","KT-241-2",68,"Indexed"],
+  ["Extension board B (CM-IO-B PREMIUM) for compressor module CM-RC-02 — Technical Information","CM-IO-B — capacity control, RI, application-limits monitoring, ECO","KT-242-2",88,"Indexed"],
+  ["Quick Start Guide — CM-RC-02 Compressor Operation Mode","CM-RC-02 minimum wiring & BEST operating-mode setup","QSG-CM-RC-02",2,"Indexed"]
+];
+
+const CHIPS = {
+  install:["Minimum wiring for a new CM-RC-02 install","Evacuation and leak check before charging an Octagon compressor","Which refrigerants are permitted on an Octagon compressor?","Does the Octagon C-series ship with a module housing?"],
+  service:["Yellow LED on the CM-RC-02 — what does it mean?","CM-RC-02 locked out — how do I reset it?","Discharge gas temperature keeps tripping the module","Which protection device does an older compressor use?"],
+  panel:["Difference between CM-IO-A and CM-IO-B extension boards","Wiring the CRII capacity control valves to CM-RC-02","Connecting BEST SOFTWARE to a CM-RC-02 for the first time","Application limits monitoring — CM-IO-B setup"],
+  customer:["What do the lights on the compressor module mean?","Is my Octagon compressor genuine BITZER?","Who do I call if the compressor faults?","How do I check the oil level?"]
+};
+
+const ROLE_LABEL = {install:"Installer", service:"Service Tech", panel:"OEM Panel Builder", customer:"Plant Engineer"};
+const ROLE_FRAME = {
+  install:["For the installer","Full commissioning depth, with wiring terminals, torque and pressure values called out."],
+  service:["For the service technician","Diagnostic order of operations — module alarm meaning, reset paths and set points included."],
+  panel:["For the OEM / panel builder","Wiring, extension-board selection and application-limits configuration for building the panel."],
+  customer:["For the plant engineer","Operation and status-light meaning only. Anything behind the terminal box goes to a qualified BITZER service partner."]
+};
+const TONE = {info:{bg:"#EAF6DE",bd:"#4F9A2A"}, warn:{bg:"#fdf4e3",bd:"#b7791f"}, stop:{bg:"#fdeceb",bd:"#b3261e"}};
+
+const ANSWERS = [
+{id:"ledstatus",kw:["led","status light","status lights","yellow led","green led","red led","blue led","light on the module","what do the lights mean"],
+ title:"What the CM-RC-02 status LEDs mean",
+ lede:"Four LEDs, visible through a sight glass on the module housing, report the module's state without connecting BEST SOFTWARE.",
+ pipe:["Resolved compressor as Octagon C-series with CM-RC-02 module","Matched operating status light table in the IQ Module Technical Information"],
+ steps:[],
+ kv:[["Green","Normal operation"],["Yellow","A sensor value exceeded a warning threshold — BEST SOFTWARE shows WARNING or CRITICAL ALARM"],["Red","Compressor motor stopped — BEST SOFTWARE shows FAULT"],["Blue","Data is transmitting via Modbus or Bluetooth"]],
+ notes:[["info","Confirm with BEST","The LED only tells you the category. Connect BEST SOFTWARE or the BEST APP over Bluetooth, or the interface converter on CN1, to read the specific alarm."]],
+ cites:[["Compressor module CM-RC-02 — IQ MODULE Technical Information","KT-240-3 · p. 54"]]},
+
+{id:"dischargetemp",kw:["discharge gas temperature","discharge temperature","tripping","overtemp","140","150","fault temperature","module keeps faulting"],
+ title:"Discharge gas temperature keeps tripping the module",
+ lede:"The CM-RC-02 has fixed discharge-gas-temperature thresholds; if a run keeps hitting fault, the fix is usually the refrigeration circuit, not the module.",
+ pipe:["Resolved Octagon compressor with CM-RC-02 module","Matched monitored-function thresholds in the IQ Module Technical Information"],
+ steps:[],
+ kv:[["Warning — single-stage","> 140°C"],["Fault — single-stage (immediate switch-off)","> 150°C"],["Warning — 2-stage compressor","130°C"],["Fault — 2-stage compressor","140°C"]],
+ notes:[["warn","Low-temperature applications","On refrigerants such as R407A, R407F, R448A and R449A, the RI (refrigerant injection) system on the CM-IO-A or CM-IO-B extension board injects liquid refrigerant to hold the discharge gas temperature down. It requires the discharge gas temperature sensor as the only additional peripheral."],["info","Not a substitute for design work","Persistent high discharge temperature usually points at low suction superheat control, an undersized evaporator, or a system issue — not a module defect."]],
+ cites:[["Compressor module CM-RC-02 — IQ MODULE Technical Information","KT-240-3 · p. 55"],["Extension board A (CM-IO-A) — Technical Information","KT-241-2 · p. 31"]]},
+
+{id:"resetlockout",kw:["reset","locked out","lockout","won't start","wont start","5 switch","short cycle","restart","won't reset","compressor faults","who do i call","fault"],
+ title:"CM-RC-02 locked out — how to reset it",
+ lede:"Whether the module only switches the compressor off or locks it out (requiring a reset) depends on the fault type — and a motor-temperature lockout can only be cleared manually.",
+ pipe:["Resolved CM-RC-02 fault-handling logic","Matched reset and restart procedure in the IQ Module Technical Information"],
+ steps:[["Determine the cause first","Evaluate the alarm messages in BEST SOFTWARE or the BEST APP before resetting anything — the module saves every alarm to its data log, including ones now inactive."],
+  ["Eliminate the cause","Fix the underlying fault. The module also self-locks after five equal switch-offs in 24 hours, or any five switch-offs within one hour, and expects the system to be checked before reset."],
+  ["Reset a switched-off compressor","Use RESET in the ALARMS menu of BEST SOFTWARE, or a Modbus reset command from the superior system controller. This clears every system-related alarm except motor-temperature."],
+  ["Restart after a motor-temperature lockout","This one is manual only: disconnect the module's voltage supply for at least 5 seconds via switch S02 (reset of the compressor safety chain)."]],
+ kv:[],
+ notes:[["stop","Motor overtemperature can't be reset remotely","If the motor temperature monitoring locked the module out, no BEST SOFTWARE or Modbus command will clear it — only the manual S02 procedure does."]],
+ cites:[["Compressor module CM-RC-02 — IQ MODULE Technical Information","KT-240-3 · p. 56"]]},
+
+{id:"bestsetup",kw:["best software","connect to the module","bluetooth password","pairing","best app","connect cm-rc-02","first time","default password"],
+ title:"Connecting BEST SOFTWARE or the BEST APP to a CM-RC-02 for the first time",
+ lede:"Same connection flow for the PC software and the phone app — the sticking point is almost always the Bluetooth password.",
+ pipe:["Resolved CM-RC-02 module","Matched BEST SOFTWARE connection procedure"],
+ steps:[["Choose your connection","Plug the BEST interface converter into CN1 on the module and into the PC/mobile device, or use Bluetooth directly — no cable needed."],
+  ["Start the pairing","In BEST SOFTWARE or the BEST APP, click NEW, select IQ MODULE CM-RC-02, then CONNECT. Choose BEST CONVERTER or BLUETOOTH."],
+  ["Enter the password","The initial password is a 12-digit alphanumeric code on a label on top of the module. If the label is blank, try the legacy 4-digit default: 8670 (firmware ≤ 2.0.12.0)."],
+  ["Change it","Change the password after first connecting — it's a cybersecurity step, not optional busywork."]],
+ kv:[["Bluetooth class","Class 2, max. 2 mW"],["Bluetooth range","Up to 10 m, depending on surroundings"],["Legacy 4-digit default","8670 (firmware ≤ 2.0.12.0)"]],
+ notes:[],
+ cites:[["Compressor module CM-RC-02 — IQ MODULE Technical Information","KT-240-3 · p. 57"]]},
+
+{id:"octrefrig",kw:["refrigerant","r410a","r32","which refrigerants","permitted refrigerant","oil type","bse55","what oil"],
+ title:"Which refrigerants and oil are permitted on the Octagon C-series?",
+ lede:"The C-series (Octagon) housing-size 3 and 4 compressors — 4FDC-5Y through 4NDC-20Y — are approved for a specific refrigerant set; don't extrapolate from another BITZER series.",
+ pipe:["Resolved Octagon C-series compressor","Matched application data in the Operating Instructions"],
+ steps:[],
+ kv:[["Permitted refrigerants","R410A, R32, R454B, R452B"],["Permitted oil","BSE55 (polyolester) — required for R410A"],["Max. allowable pressure — high side","42 bar"],["Max. allowable pressure — low side","25 bar"]],
+ notes:[["stop","Don't charge outside this list","This application range is specific to the C-series/Octagon housing sizes 3 and 4. Other BITZER reciprocating series (ECOLINE, .2 series, H series) have their own permitted refrigerants and oils — check the model's own section before charging."]],
+ cites:[["Operating Instructions — Semi-hermetic reciprocating compressors","KB-100-2 · p. 72"],["OCTAGON Series for R410A — 60 Hz","KP-106-2 · p. 3"]]},
+
+{id:"modulehousing",kw:["module housing","ships without","comes without","mounting the module","retrofitting the module","c series module","no housing"],
+ title:"Does the Octagon C-series ship with a module housing?",
+ lede:"No. That changes how you plan the IQ Module install on a new C-series compressor versus a retrofit on an existing housing-2/H-series unit.",
+ pipe:["Resolved Octagon (C-series) compressor","Matched state-of-delivery note in the Operating Instructions"],
+ steps:[],
+ kv:[],
+ notes:[["info","C series specific","\"C series compressors are always supplied without module housing\" — plan on mounting the CM-RC-02 module housing and its peripherals as part of the install, not as a later retrofit step."],["info","Retrofitting elsewhere","For adding CM-IO-B and its peripheral devices to an existing module housing, follow KW-242 (Retrofitting CM-RC-02 with CM-IO-B and peripheral devices) rather than improvising."]],
+ cites:[["Operating Instructions — Semi-hermetic reciprocating compressors","KB-100-2 · p. 87"]]},
+
+{id:"minwiring",kw:["minimum wiring","wire the module","cn10","cn11","cn12","cn9","quick start","first time wiring","how do i wire"],
+ title:"Minimum wiring for a CM-RC-02 install",
+ lede:"The quick-start wiring is short by design — most of the module's terminals are for optional peripherals, not the baseline start/stop and protection circuit.",
+ pipe:["Resolved CM-RC-02 module in compressor operation mode","Matched minimum-wiring diagram in the Quick Start Guide"],
+ steps:[["Motor temperature (delivered wired)","The PTC motor sensor connects to CN11/CN12 (orange cable) — this comes pre-wired from the factory."],
+  ["High pressure switch (optional)","CN9:3/4 are bridged ex-factory with HP switch monitoring active by default. Remove the jumper to fit a real switch."],
+  ["Module power","Connect supply voltage to CN10:3/4."],
+  ["Safety chain","CN10:1 is the safety chain input. Motor contactor voltage appears at CN9:1/2 only when the start signal is present at CN3:3/4 (or via Modbus) and no alarm is active."],
+  ["Protective earth","Connect per the compressor's own Operating Instructions — KB-100, KB-120 or KB-130 depending on the series."]],
+ kv:[],
+ notes:[["stop","Never test-energize the sensor terminals","Never apply voltage to CN1–CN6, CN11, CN12 or CN23–CN28, even for testing — the module can be damaged or fail. CN23 terminals 1/2 are limited to 10 V; CN1 terminal 3 to 24 V."]],
+ cites:[["Quick Start Guide — CM-RC-02 Compressor Operation Mode","QSG-CM-RC-02 · p. 1–2"],["Compressor module CM-RC-02 — IQ MODULE Technical Information","KT-240-3 · p. 39–40"]]},
+
+{id:"commission",kw:["commissioning","evacuate","evacuation","leak test","charging refrigerant","pressure test","start up procedure","startup","stagnant vacuum","oil level","check the oil","how do i check the oil"],
+ title:"Commissioning an Octagon compressor — evacuation, leak test, charge",
+ lede:"The compressor left the factory already pressure-tested and nitrogen-charged; commissioning is mostly a tightness check, an evacuation, and a careful first charge.",
+ pipe:["Resolved Octagon compressor, pre-start","Matched commissioning sequence in the Operating Instructions"],
+ steps:[["Check tightness","Pressurize with dry nitrogen, staying within the maximum allowable pressures on the name plate (high and low side are different limits). The factory pressure-strength test means a tightness test alone is normally enough."],
+  ["Evacuate","Switch on the oil heater, open all shut-off and solenoid valves, and pull the entire system down on both suction and high-pressure sides. Target: a stagnant vacuum below 1 mbar with the pump isolated. Repeat if it doesn't hold."],
+  ["Charge refrigerant","Compressor off. Charge liquid refrigerant into the condenser or receiver (or the evaporator on a flooded system) — never straight into a running compressor — and take blends off the cylinder as a bubble-free liquid."],
+  ["Verify oil temperature before start","Oil must be at least 20°C and at least 20 K above ambient — refrigerants with a high isentropic coefficient (R410A among them) need a 30 K margin, not 20 K."],
+  ["Start and check","Confirm oil level, oil circuit and oil return immediately after start, and watch for oil foam — it should recede as the system stabilizes."]],
+ kv:[],
+ notes:[["stop","Never pressurize with oxygen","Use dry nitrogen only for pressure and tightness testing — never O2, and never use refrigerant itself as a leak indicator."],["warn","Never start into a vacuum","Do not apply any voltage to the compressor while it's under vacuum, not even for testing — it can damage the motor and terminal plate."]],
+ cites:[["Operating Instructions — Semi-hermetic reciprocating compressors","KB-100-2 · p. 112–114"]]},
+
+{id:"capacitycontrol",kw:["capacity control","crii","varistep","varipack","0-10v","0..10v","part load","cm-io-a","analog signal"],
+ title:"Capacity control on an Octagon compressor with CM-IO-A",
+ lede:"Capacity control isn't built into the base CM-RC-02 — it comes from the CM-IO-A (or CM-IO-B) extension board driving the compressor's CRII solenoid valves.",
+ pipe:["Resolved Octagon compressor with CM-IO-A extension board","Matched capacity control section in the CM-IO-A Technical Information"],
+ steps:[],
+ kv:[["Control method","VARISTEP — CM-RC-02 switches one or two CRII/CR solenoid valves; VARIPACK addressable from firmware 2.1"],["4-cylinder CRII range","Full load down to 10% part load"],["Command input","0..10 V DC analog signal on CN23, or a Modbus capacity command via CN1"],["On/off alternative","Auxiliary relay K14 + 100 kΩ resistor R05 wired to CN23"]],
+ notes:[["info","Application limits still apply","Reduced-capacity operation is only permitted within the part-load application limits for the selected refrigerant — check BITZER SOFTWARE or KT-101 rather than assuming the full-load envelope holds at part load."]],
+ cites:[["Extension board A (CM-IO-A) — Technical Information","KT-241-2 · p. 30–31"]]},
+
+{id:"iomodules",kw:["cm-io-a","cm-io-b","extension board","advanced","premium","difference between","which extension board","io-a or io-b"],
+ title:"CM-IO-A vs. CM-IO-B — which extension board",
+ lede:"Both plug into the CM-RC-02 module housing; BEST SOFTWARE calls them ADVANCED and PREMIUM respectively, and B is a superset of A.",
+ pipe:["Resolved CM-RC-02 with an extension-board question","Matched feature sets in the CM-IO-A and CM-IO-B Technical Information documents"],
+ steps:[],
+ kv:[["CM-IO-A (ADVANCED)","Capacity control (VARISTEP/VARIPACK), RI refrigerant-injection system, additional fan output, OLM-IQ oil-return monitoring"],["CM-IO-B (PREMIUM)","Everything in CM-IO-A, plus application-limits monitoring (condensing/evaporating temperature), ECO heat-exchanger operation for 2-stage compressors, and SU start unloading"]],
+ notes:[["info","Pick by function, not by default","If the job only needs capacity control and RI injection, CM-IO-A covers it. Application-limits monitoring or an ECO circuit on a 2-stage compressor requires CM-IO-B."]],
+ cites:[["Extension board A (CM-IO-A) — Technical Information","KT-241-2 · p. 24"],["Extension board B (CM-IO-B) — Technical Information","KT-242-2 · p. 32, 37–44"]]},
+
+{id:"seb",kw:["se-b","protection device","which protection device","cm-rc-01","older compressor","no module","terminal box protection"],
+ title:"SE-B* protection device vs. CM-RC-02",
+ lede:"If a compressor in the field isn't fitted with CM-RC-02 or CM-RC-01, it's protected by the older SE-B* device in the terminal box instead — the wiring and reset procedure are different.",
+ pipe:["Resolved question about compressor protection device","Matched SE-B* description in the Operating Instructions"],
+ steps:[["Identify what's fitted","SE-B* is installed only on compressors NOT equipped with CM-RC-02 or CM-RC-01. If the compressor has an IQ Module, this section doesn't apply."],
+  ["Reset an SE-B* lockout","Interrupt the voltage supply to the compressor protection device for at least 5 seconds. It locks out immediately on overtemperature — there's no BEST SOFTWARE reset path because there's no module."]],
+ kv:[],
+ notes:[["stop","Don't cross the circuits","The temperature control circuit's cables and terminals must never contact the control or operating voltage — applying too high a voltage to the SE-B* can fail the device and take the compressor down with it."]],
+ cites:[["Operating Instructions — Semi-hermetic reciprocating compressors","KB-100-2 · p. 111"]]},
+
+{id:"genuine",kw:["genuine","counterfeit","authentic","is this real bitzer","verify authenticity","product piracy","who do i call","who do i contact","service point"],
+ title:"Is this a genuine BITZER compressor?",
+ lede:"BITZER's authenticity check runs through the SPOT app, not through this assistant — scan the QR code on the compressor name plate and SPOT verifies it directly against BITZER's own records.",
+ pipe:["Recognized an authenticity / counterfeit question","Routed to the SPOT app QR verification flow rather than guessing from a description"],
+ steps:[["Find the QR code","It's on the compressor name plate, alongside the model designation, serial number and conformity mark."],
+  ["Scan it in the SPOT app","SPOT confirms whether the product is genuine, and surfaces the matching technical documentation set for that exact unit — offline included."],
+  ["If it fails or looks altered","Treat the unit as unverified and contact a BITZER Service Point (also listed in SPOT) before returning it to service."]],
+ kv:[],
+ notes:[["info","Why this assistant doesn't just answer it","Authenticity depends on BITZER's own product records behind the QR code, not on anything in the technical manuals — SPOT is the source of truth here, this assistant is not."]],
+ cites:[]}
+];
+
+const OFFSCOPE = ["copeland","danfoss","carlyle","frascold","dorin","tecumseh"];
+
+const DOCPAGES = {
+  "4fdc5y":{tagline:"Octagon Series — 4-Cylinder Semi-Hermetic Reciprocating Compressor",badge:"Compressor",
+    details:"4FDC-5Y is the smallest compressor in BITZER's Octagon C-series — a 4-cylinder, semi-hermetic reciprocating compressor built for R410A (also approved for R32, R454B and R452B) at medium and high evaporating temperatures. Housing size 3, 529 CFH displacement at 1750 RPM, 196 lb. Like every C-series model, it ships without a module housing — the IQ Module CM-RC-02 and its housing are mounted as part of the install.",
+    features:["Integrated pulsation mufflers (BITZER patented) for quiet, low-vibration running","Blocked suction system capacity control, 50% (option)","High-strength housing without bottom plate — rated to 42 bar on the high-pressure side","Advanced centrifugal lubrication via dynamic disc","Wear-resistant drive gear with multilayer bearings, optimised for low friction and emergency-run characteristics","Electronic protection: PTC thermal motor monitoring, optional discharge gas temperature sensor","IP65 terminal box with terminal strip for additional components"],
+    benefits:["Energy efficient — high cooling capacity and minimal energy use via efficient working valves, minimal dead space and a large-volume motor","Robust — solid valve-plate design, impact-resistant spring-steel valve reeds","Quiet and low-vibration — optimised mass balance plus integrated pulsation mufflers","Optional extras: crankcase heater, optical oil-supply monitoring, integrated start unloader, integrated capacity control, additional fan, discharge gas temperature sensor"],
+    resources:[["Operating Instructions — Semi-hermetic reciprocating compressors","KB-100-2"],["OCTAGON Series for R410A — 60 Hz Datasheet","KP-106-2"],["Compressor module CM-RC-02 — IQ MODULE Technical Information","KT-240-3"]]},
+  "4edc6y":{tagline:"Octagon Series — 4-Cylinder Semi-Hermetic Reciprocating Compressor",badge:"Compressor",
+    details:"4EDC-6Y is a 4-cylinder, semi-hermetic reciprocating compressor in BITZER's Octagon C-series, built for R410A (also approved for R32, R454B and R452B) at medium and high evaporating temperatures. Housing size 3, 666 CFH displacement at 1750 RPM, 196 lb. Ships without a module housing — the IQ Module CM-RC-02 and its housing are mounted as part of the install.",
+    features:["Integrated pulsation mufflers (BITZER patented) for quiet, low-vibration running","Blocked suction system capacity control, 50% (option)","High-strength housing without bottom plate — rated to 42 bar on the high-pressure side","Advanced centrifugal lubrication via dynamic disc","Wear-resistant drive gear with multilayer bearings, optimised for low friction and emergency-run characteristics","Electronic protection: PTC thermal motor monitoring, optional discharge gas temperature sensor","IP65 terminal box with terminal strip for additional components"],
+    benefits:["Energy efficient — high cooling capacity and minimal energy use via efficient working valves, minimal dead space and a large-volume motor","Robust — solid valve-plate design, impact-resistant spring-steel valve reeds","Quiet and low-vibration — optimised mass balance plus integrated pulsation mufflers","Optional extras: crankcase heater, optical oil-supply monitoring, integrated start unloader, integrated capacity control, additional fan, discharge gas temperature sensor"],
+    resources:[["Operating Instructions — Semi-hermetic reciprocating compressors","KB-100-2"],["OCTAGON Series for R410A — 60 Hz Datasheet","KP-106-2"],["Compressor module CM-RC-02 — IQ MODULE Technical Information","KT-240-3"]]},
+  "4cdc9y":{tagline:"Octagon Series — 4-Cylinder Semi-Hermetic Reciprocating Compressor",badge:"Compressor",
+    details:"4CDC-9Y is the largest housing-size-3 model in BITZER's Octagon C-series — a 4-cylinder, semi-hermetic reciprocating compressor built for R410A (also approved for R32, R454B and R452B) at medium and high evaporating temperatures. 952 CFH displacement at 1750 RPM, 206 lb. Ships without a module housing — the IQ Module CM-RC-02 and its housing are mounted as part of the install.",
+    features:["Integrated pulsation mufflers (BITZER patented) for quiet, low-vibration running","Blocked suction system capacity control, 50% (option)","High-strength housing without bottom plate — rated to 42 bar on the high-pressure side","Advanced centrifugal lubrication via dynamic disc","Wear-resistant drive gear with multilayer bearings, optimised for low friction and emergency-run characteristics","Electronic protection: PTC thermal motor monitoring, optional discharge gas temperature sensor","IP65 terminal box with terminal strip for additional components"],
+    benefits:["Energy efficient — high cooling capacity and minimal energy use via efficient working valves, minimal dead space and a large-volume motor","Robust — solid valve-plate design, impact-resistant spring-steel valve reeds","Quiet and low-vibration — optimised mass balance plus integrated pulsation mufflers","Optional extras: crankcase heater, optical oil-supply monitoring, integrated start unloader, integrated capacity control, additional fan, discharge gas temperature sensor"],
+    resources:[["Operating Instructions — Semi-hermetic reciprocating compressors","KB-100-2"],["OCTAGON Series for R410A — 60 Hz Datasheet","KP-106-2"],["Compressor module CM-RC-02 — IQ MODULE Technical Information","KT-240-3"]]},
+  "4vdc10y":{tagline:"Octagon Series — 4-Cylinder Semi-Hermetic Reciprocating Compressor",badge:"Compressor",
+    details:"4VDC-10Y is the smallest housing-size-4 model in BITZER's Octagon C-series — a 4-cylinder, semi-hermetic reciprocating compressor built for R410A (also approved for R32, R454B and R452B) at medium and high evaporating temperatures. 1233 CFH displacement at 1750 RPM, 315 lb, dual-voltage 9-lead motor. Ships without a module housing — the IQ Module CM-RC-02 and its housing are mounted as part of the install.",
+    features:["Integrated pulsation mufflers (BITZER patented) for quiet, low-vibration running","Blocked suction system capacity control, 50% (option)","High-strength housing without bottom plate — rated to 42 bar on the high-pressure side","Advanced centrifugal lubrication via dynamic disc","Wear-resistant drive gear with multilayer bearings, optimised for low friction and emergency-run characteristics","Electronic protection: PTC thermal motor monitoring, optional discharge gas temperature sensor","IP65 terminal box with terminal strip for additional components"],
+    benefits:["Energy efficient — high cooling capacity and minimal energy use via efficient working valves, minimal dead space and a large-volume motor","Robust — solid valve-plate design, impact-resistant spring-steel valve reeds","Quiet and low-vibration — optimised mass balance plus integrated pulsation mufflers","Optional extras: crankcase heater, optical oil-supply monitoring, integrated start unloader, integrated capacity control, additional fan, discharge gas temperature sensor"],
+    resources:[["Operating Instructions — Semi-hermetic reciprocating compressors","KB-100-2"],["OCTAGON Series for R410A — 60 Hz Datasheet","KP-106-2"],["Compressor module CM-RC-02 — IQ MODULE Technical Information","KT-240-3"]]},
+  "4ndc20y":{tagline:"Octagon Series — 4-Cylinder Semi-Hermetic Reciprocating Compressor",badge:"Compressor",
+    details:"4NDC-20Y is the largest compressor in BITZER's Octagon C-series — a 4-cylinder, semi-hermetic reciprocating compressor built for R410A (also approved for R32, R454B and R452B) at medium and high evaporating temperatures. 1998 CFH displacement at 1750 RPM, 337 lb. Ships without a module housing — the IQ Module CM-RC-02 and its housing are mounted as part of the install.",
+    features:["Integrated pulsation mufflers (BITZER patented) for quiet, low-vibration running","Blocked suction system capacity control, 50% (option)","High-strength housing without bottom plate — rated to 42 bar on the high-pressure side","Advanced centrifugal lubrication via dynamic disc","Wear-resistant drive gear with multilayer bearings, optimised for low friction and emergency-run characteristics","Electronic protection: PTC thermal motor monitoring, optional discharge gas temperature sensor","IP65 terminal box with terminal strip for additional components"],
+    benefits:["Energy efficient — high cooling capacity and minimal energy use via efficient working valves, minimal dead space and a large-volume motor","Robust — solid valve-plate design, impact-resistant spring-steel valve reeds","Quiet and low-vibration — optimised mass balance plus integrated pulsation mufflers","Optional extras: crankcase heater, optical oil-supply monitoring, integrated start unloader, integrated capacity control, additional fan, discharge gas temperature sensor"],
+    resources:[["Operating Instructions — Semi-hermetic reciprocating compressors","KB-100-2"],["OCTAGON Series for R410A — 60 Hz Datasheet","KP-106-2"],["Compressor module CM-RC-02 — IQ MODULE Technical Information","KT-240-3"]]}
+};
+
+const PANE_META = {
+  chat:["Technical Inquiry","Ask about the Octagon compressor family or the IQ Module range"],
+  doc:["Product Documentation","Details, features and downloadable resources for the compressor in context"],
+  fleet:["Equipment Lookup","Resolve a nameplate or QR scan to its compressor model before answering"],
+  library:["Document Library","Manuals, technical information sheets and quick-start guides available to the assistant"],
+  parts:["Parts & Diagrams","Component designators and wiring references for the IQ Module and its peripherals"],
+  agent:["Agent Management","Retrieval scope, guardrails and model routing"],
+  users:["User Access","Who can ask what, and how deep the answers go"]
+};
+
+class Component extends DCLogic {
+  state = {
+    pane: "chat",
+    role: this.props.defaultRole || "service",
+    unitId: "4fdc5y",
+    messages: [],
+    query: "",
+    fleetQ: "",
+    history: [],
+    toast: "",
+    guards: [true, true, true, false],
+    seq: 1
+  };
+
+  componentDidMount(){ this.greet(); }
+  componentWillUnmount(){ clearTimeout(this._t); clearTimeout(this._toast); }
+
+  unit(){ return EQUIP.find(e => e.id === this.state.unitId) || EQUIP[0]; }
+
+  toast(msg){
+    this.setState({toast: msg});
+    clearTimeout(this._toast);
+    this._toast = setTimeout(() => this.setState({toast: ""}), 2200);
+  }
+
+  go(pane){ this.setState({pane}); window.scrollTo(0, 0); }
+
+  greet(){
+    this.setState({messages: []});
+  }
+
+  ask(text){
+    const q = (text || "").trim();
+    if(!q) return;
+    const u = this.unit();
+    const base = this.state.seq;
+    const msgs = this.state.messages.concat([
+      {id: base, kind: "user", text: q},
+      {id: base + 1, kind: "thinking", text: "Searching " + u.family + " documentation…"}
+    ]);
+    const hist = [{q: q.length > 40 ? q.slice(0, 40) + "…" : q, model: u.model}].concat(this.state.history).slice(0, 6);
+    this.setState({messages: msgs, seq: base + 2, query: "", history: hist});
+    clearTimeout(this._t);
+    this._t = setTimeout(() => {
+      const answer = this.resolve(q);
+      const next = this.state.messages.map(m => m.id === base + 1 ? Object.assign({id: m.id}, answer) : m);
+      this.setState({messages: next}, () => this.scrollToMsg(base + 1));
+    }, 750);
+  }
+
+  scrollToMsg(id){
+    const el = document.getElementById("msg-" + id);
+    if(!el) return;
+    const bar = document.getElementById("topbar");
+    const offset = (bar ? bar.getBoundingClientRect().height : 0) + 16;
+    const top = window.scrollY + el.getBoundingClientRect().top - offset;
+    window.scrollTo({top: Math.max(0, top), behavior: "smooth"});
+  }
+
+  resolve(q){
+    const s = q.toLowerCase();
+    const u = this.unit();
+    const brand = OFFSCOPE.find(b => s.includes(b));
+    if(brand){
+      const B = brand.replace(/\b\w/g, c => c.toUpperCase());
+      return {kind:"answer", model:u.model,
+        title:"That equipment isn't in the BITZER SPOT library",
+        lede:"You've asked about " + B + " equipment. This assistant answers only from BITZER documentation and BITZER-supplied components, so it will not guess at a procedure for another manufacturer's compressor.",
+        pipe:["Searched the BITZER SPOT document set","No matching equipment in the BITZER library"],
+        steps:[], kv:[],
+        notes:[["stop","Why this matters","Refrigerant charge, module wiring and set points are not transferable between manufacturers. A plausible-sounding answer from the wrong manual is worse than no answer."],
+               ["info","What I can do","If a BITZER compressor at this site pairs with a " + B + " component as a field replacement, give me the BITZER model and I'll answer for everything on the BITZER side of that interface."]],
+        cites:[], fig:null};
+    }
+    let best = null, bestScore = 0;
+    for(const a of ANSWERS){
+      let sc = 0;
+      for(const k of a.kw) if(s.includes(k)) sc += k.length > 7 ? 3 : 2;
+      if(sc > bestScore){ bestScore = sc; best = a; }
+    }
+    if(!best){
+      return {kind:"answer", model:u.model,
+        title:"Narrow it down for me",
+        lede:"I have the full SPOT document set for the " + u.model + " loaded, but that could point at several sections. Tell me what the equipment is actually doing, or start from one of the suggestions below the message box.",
+        pipe:["Resolved " + u.model + " — " + u.family, "No single section matched with confidence"],
+        steps:[], kv:[],
+        notes:[["info","Rather than guess","The assistant asks instead of picking the closest-looking procedure. A wrong procedure on a live compressor costs more than a follow-up question."]],
+        cites:[], fig:null};
+    }
+    return {kind:"answer", model:u.model, title:best.title, lede:best.lede, pipe:best.pipe || [],
+      steps:best.steps || [], kv:best.kv || [], notes:best.notes || [], cites:best.cites || [], fig:best.fig || null, img:best.img || []};
+  }
+
+  renderVals(){
+    const st = this.state;
+    const u = this.unit();
+    const meta = PANE_META[st.pane];
+    const nav = (id, label) => ({
+      id, label, go: () => this.go(id),
+      bg: st.pane === id ? "#223018" : "transparent",
+      mark: st.pane === id ? "inset 3px 0 0 #7ED33F" : "none"
+    });
+    const [roleTitle, roleNote] = ROLE_FRAME[st.role];
+    const dp = DOCPAGES[u.id] || DOCPAGES["4fdc5y"];
+
+    const messages = st.messages.map(m => {
+      if(m.kind === "user") return {id: m.id, isUser: true, text: m.text, who: ROLE_LABEL[st.role]};
+      if(m.kind === "thinking") return {id: m.id, isThinking: true, text: m.text};
+      return {
+        id: m.id, isAnswer: true, model: m.model, title: m.title, lede: m.lede,
+        roleTitle, roleNote,
+        pipe: (m.pipe || []).map((t, i) => ({id: i, t})),
+        hasSteps: (m.steps || []).length > 0,
+        steps: (m.steps || []).map(([t, d], i) => ({id: i, n: i + 1, t, d})),
+        hasKv: (m.kv || []).length > 0,
+        kv: (m.kv || []).map(([k, v], i) => ({id: i, k, v})),
+        notes: (m.notes || []).map(([tone, t, d], i) => ({id: i, t, d, bg: (TONE[tone] || TONE.info).bg, bd: (TONE[tone] || TONE.info).bd})),
+        hasFig: !!m.fig, figcap: m.fig || "",
+        hasImg: !!(m.img && m.img.length), imgs: (m.img || []).map(([src, cap], i) => ({id: i, src, cap})),
+        cites: (m.cites || []).map(([doc, ref], i) => ({id: i, doc, ref, open: () => this.toast("Opening " + doc + " — " + ref)}))
+      };
+    });
+
+    const fq = st.fleetQ.toLowerCase();
+    const fleetList = EQUIP.filter(e => !fq || [e.model, e.family, e.line, e.tags.join(" ")].join(" ").toLowerCase().includes(fq)).map(e => ({
+      id: e.id, model: e.model, family: e.family, line: e.line, doc: e.doc,
+      tagList: e.tags.map((t, i) => ({id: i, t})),
+      pick: () => { this.setState({unitId: e.id, pane: "chat"}, () => { this.greet(); this.toast("Equipment in context: " + e.model); }); }
+    }));
+
+    const hasAsked = st.messages.length > 0;
+
+    return {
+      paneTitle: meta[0], paneSub: meta[1],
+      isChat: st.pane === "chat", isFleet: st.pane === "fleet", isLibrary: st.pane === "library",
+      isParts: st.pane === "parts", isAgent: st.pane === "agent", isUsers: st.pane === "users",
+      isDoc: st.pane === "doc",
+      hasAsked: hasAsked, showFaqHero: !hasAsked,
+      chatCols: hasAsked ? "minmax(0,1fr) 320px" : "minmax(0,1fr)",
+      roleNote: roleNote,
+      dp: dp,
+      hasDpPhoto: !!dp.hero, dpPhoto: dp.hero || "",
+      hasDpGallery: !!(dp.gallery && dp.gallery.length),
+      dpGallery: (dp.gallery || []).map(([src,cap],i)=>({id:i,src,cap})),
+      dpFeatures: dp.features.map((t,i)=>({id:i,t})),
+      dpBenefits: dp.benefits.map((t,i)=>({id:i,t})),
+      dpResources: dp.resources.map(([t,pn],i)=>({id:i,t,pn,open:()=>this.toast("Opening "+t+" — "+pn)})),
+      dpAsk: () => { this.setState({pane:"chat"}, () => this.greet()); },
+      navWork: [nav("chat","Technical Inquiry"), nav("doc","Product Documentation"), nav("fleet","Equipment Lookup"), nav("library","Document Library"), nav("parts","Parts & Diagrams")],
+      navAdmin: [nav("agent","Agent Management"), nav("users","User Access")],
+      history: st.history.map((h, i) => ({id: i, q: h.q, model: h.model, open: () => this.toast("Prototype — chat history is retained per user in the live build")})),
+      newInquiry: () => { this.setState({pane: "chat"}, () => this.greet()); },
+      roles: Object.keys(ROLE_LABEL).map(k => ({
+        id: k, label: ROLE_LABEL[k],
+        bg: st.role === k ? "#2E5C16" : "transparent",
+        fg: st.role === k ? "#ffffff" : "#5d7086",
+        fw: st.role === k ? "500" : "400",
+        pick: () => { this.setState({role: k}, () => { this.greet(); this.toast("Answering as: " + ROLE_LABEL[k]); }); }
+      })),
+      messages,
+      chips: (CHIPS[st.role] || []).map((t, i) => ({id: i, t, ask: () => this.ask(t)})),
+      query: st.query,
+      onQuery: (e) => this.setState({query: e.target.value}),
+      onKey: (e) => { if(e.key === "Enter" && !e.shiftKey){ e.preventDefault(); this.ask(this.state.query); } },
+      send: () => this.ask(this.state.query),
+      unit: u, unitId: st.unitId,
+      unitTags: u.tags.map((t, i) => ({id: i, t})),
+      unitStats: [{id:1,k:"Temp class",v:u.temp},{id:2,k:"Refrigerant",v:u.ref},{id:3,k:"Controls",v:u.ctrl},{id:4,k:"Displacement @ 1750 RPM",v:u.disp},{id:5,k:"Cooling capacity (90°F cond / 45°F evap)",v:u.cap},{id:6,k:"Primary doc",v:u.doc}],
+      equipment: EQUIP.map(e => ({id: e.id, optLabel: e.model + " — " + e.family})),
+      onUnit: (e) => { const id = e.target.value; this.setState({unitId: id}, () => this.greet()); },
+      fleetQ: st.fleetQ,
+      onFleetQ: (e) => this.setState({fleetQ: e.target.value}),
+      fleetList,
+      docs: DOCS.map(([title, covers, pn, pages, status, thumb], i) => ({
+        id: i, title, covers, pn, pages, status,
+        hasThumb: !!thumb, thumb: thumb || "",
+        bg: status === "Indexed" ? "#e6f4ed" : "#fdf4e3",
+        fg: status === "Indexed" ? "#2E7A16" : "#8a5a00"
+      })),
+      partsRows: [
+        {id:1,ref:"K03",name:"Compressor module (CM-RC-02)",pn:"CN1–CN12",note:"Base IQ Module — KT-240-3 p. 39"},
+        {id:2,ref:"B02",name:"Discharge gas temperature sensor (Pt1000 or PTC)",pn:"CN3:1/2",note:"KT-240-3 p. 40"},
+        {id:3,ref:"B10",name:"High pressure switch",pn:"CN9:3/4",note:"Bridged ex-factory — remove jumper to fit — KT-240-3 p. 39"},
+        {id:4,ref:"B30",name:"Oil level switch (OLS-1 or OLC-D1)",pn:"CN4",note:"KT-240-3 p. 40"},
+        {id:5,ref:"B12",name:"Differential oil pressure switch (DP-3, DP-2 or DP-1)",pn:"CN4",note:"KT-240-3 p. 40"},
+        {id:6,ref:"E01",name:"Oil heater",pn:"CN8",note:"Max. 500 W at 230 V / 250 W at 115 V — KT-240-3 p. 40"},
+        {id:7,ref:"K21",name:"Extension board (CM-IO-A or CM-IO-B)",pn:"Mounts to CM-RC-02 module housing",note:"CM-IO-A: KT-241-2 p. 28 · CM-IO-B: KT-242-2 p. 34"},
+        {id:8,ref:"B43/M41",name:"OLM-IQ-AS oil-return actuator-sensor unit",pn:"CN4 (sensor) + CN20 (valve)",note:"Extension board only — KT-241-2 p. 28"}
+      ],
+      partsFigs: [],
+      pipeline: [
+        {id:1,n:1,t:"Resolve the compressor",d:"SPOT already resolves a QR/nameplate scan to the exact model, refrigerant class and fitted IQ Module — this step reuses that identity link rather than re-deriving it.",accent:"#2E5C16"},
+        {id:2,n:2,t:"Search only that model's SPOT document set",d:"Hybrid keyword + semantic retrieval scoped to the resolved compressor family and its IQ Module extension boards.",accent:"#4F9A2A"},
+        {id:3,n:3,t:"Compose the procedure",d:"Steps, terminals, thresholds, board references and the wiring note that matches — assembled in the order a technician would work it.",accent:"#7ED33F"},
+        {id:4,n:4,t:"Inject safety and role framing",d:"Lock-out/tag-out, pressure and refrigerant handling warnings, and the line between installer/service work and plant-engineer work.",accent:"#C98A2B"},
+        {id:5,n:5,t:"Guardrail check",d:"Not in the BITZER SPOT document set? The assistant says so and names what it searched — it never fills the gap with a competitor's procedure.",accent:"#b7791f"}
+      ],
+      guardrails: [
+        {id:0,on:st.guards[0],t:"BITZER sources only",d:"Refuse and say so when the SPOT document set doesn't cover it. No general-web inference inside the answer body.",toggle:()=>this.toggleGuard(0)},
+        {id:1,on:st.guards[1],t:"Cite page-level or don't answer",d:"Every claim carries a document number and page reference.",toggle:()=>this.toggleGuard(1)},
+        {id:2,on:st.guards[2],t:"Safety interlock language",d:"Lock-out/tag-out, pressure and refrigerant handling warnings are injected, never optional.",toggle:()=>this.toggleGuard(2)},
+        {id:3,on:st.guards[3],t:"Supplemental web research",d:"Shown in a separate, clearly labeled block — off by default for customer-facing use.",toggle:()=>this.toggleGuard(3)}
+      ],
+      routing: [
+        {id:1,k:"Primary answer engine",v:"Claude"},{id:2,k:"Standby engine",v:"Gemini"},
+        {id:3,k:"Embeddings",v:"Hybrid keyword + semantic"},{id:4,k:"Figure extraction",v:"Vision pass on ingest"},
+        {id:5,k:"Languages",v:"English, German"},{id:6,k:"Median first token",v:"1.4 s"},{id:7,k:"Answers with citations",v:"100%"}
+      ],
+      users: [
+        {id:1,name:"M. Alvarez",org:"Authorized BITZER Service Partner",role:"Service Tech",scope:"Full service + IQ Module diagnostics",last:"4 min ago"},
+        {id:2,name:"D. Okafor",org:"OEM panel builder — contract install",role:"Installer",scope:"Operating Instructions, commissioning",last:"1 hr ago"},
+        {id:3,name:"J. Whitfield",org:"OEM Panel Builder — rack/condensing unit shop",role:"OEM Panel Builder",scope:"Extension boards, wiring, capacity control",last:"Yesterday"},
+        {id:4,name:"S. Bhatt",org:"Plant Engineering",role:"Plant Engineer",scope:"Operation & status lights only",last:"2 days ago"},
+        {id:5,name:"Kiosk — Training Center",org:"BITZER US Training, Flowery Branch GA",role:"Shared device",scope:"Training & knowledge base",last:"3 days ago"}
+      ],
+      actSendPhone: () => this.toast("Sent to your phone"),
+      actOrder: () => this.toast("Opening ePARTS for this component"),
+      actEscalate: () => this.toast("Escalated to a BITZER Service Point (via SPOT locator) with the full transcript"),
+      actHelpful: () => this.toast("Marked helpful — logged for the documentation team"),
+      actUpload: () => this.toast("Prototype — in the live build the PDF is chunked and searchable in minutes"),
+      actStock: () => this.toast("Checking myBITZER for spare-parts pricing…"),
+      actExploded: () => this.toast("Opening the CM-RC-02 wiring diagram — KT-240-3, p. 46"),
+      actInvite: () => this.toast("Invite scoped to a role"),
+      actSso: () => this.toast("Mapping myBITZER IdP groups to assistant roles"),
+      actExport: () => this.toast("Usage export queued"),
+      hasToast: !!st.toast, toast: st.toast
+    };
+  }
+
+  toggleGuard(i){
+    const g = this.state.guards.slice();
+    g[i] = !g[i];
+    this.setState({guards: g});
+    this.toast(g[i] ? "Guardrail enabled" : "Guardrail disabled — prototype only");
+  }
+}
+
+</script>
+</body>
+</html>
