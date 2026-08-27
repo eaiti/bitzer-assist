@@ -373,7 +373,7 @@
                       <sc-if value="{{ d.hasThumb }}">
                         <img src="{{ d.thumb }}" alt="" style="flex:0 0 46px;width:46px;height:52px;object-fit:contain;background:#f5f8fb;border:1px solid #dde5ee;border-radius:4px;padding:3px" />
                       </sc-if>
-                      <span>{{ d.title }}</span>
+                      <a href="{{ d.url }}" target="_blank" rel="noopener">{{ d.title }}</a>
                     </span>
                   </td>
                   <td style="padding:10px 14px;border-bottom:1px solid #eef3f8;color:#5d7086">{{ d.covers }}</td>
@@ -520,12 +520,12 @@ const EQUIP = [
 ];
 
 const DOCS = [
-  ["Semi-hermetic reciprocating compressors — Operating Instructions (2KES-05(Y) .. 8FE-70(Y), incl. Octagon C-series 4FDC-5Y .. 4NDC-20Y)","All semi-hermetic reciprocating compressor series, including the Octagon C-series","KB-100-2",188,"Indexed"],
-  ["OCTAGON Series for R410A — 60 Hz Technical Datasheet","Octagon R410A line, 4FDC-5Y .. 4NDC-20Y","KP-106-2",8,"Indexed"],
-  ["Compressor module for reciprocating compressors — IQ MODULE CM-RC-02 — Technical Information","CM-RC-02 IQ Module, all reciprocating compressor series","KT-240-3",100,"Indexed"],
-  ["Extension board A (CM-IO-A ADVANCED) for compressor module CM-RC-02 — Technical Information","CM-IO-A — capacity control, RI system, OLM-IQ","KT-241-2",68,"Indexed"],
-  ["Extension board B (CM-IO-B PREMIUM) for compressor module CM-RC-02 — Technical Information","CM-IO-B — capacity control, RI, application-limits monitoring, ECO","KT-242-2",88,"Indexed"],
-  ["Quick Start Guide — CM-RC-02 Compressor Operation Mode","CM-RC-02 minimum wiring & BEST operating-mode setup","QSG-CM-RC-02",2,"Indexed"]
+  ["Semi-hermetic reciprocating compressors — Operating Instructions (2KES-05(Y) .. 8FE-70(Y), incl. Octagon C-series 4FDC-5Y .. 4NDC-20Y)","All semi-hermetic reciprocating compressor series, including the Octagon C-series","KB-100-2",188,"Indexed","docs/kb-100-2.pdf"],
+  ["OCTAGON Series for R410A — 60 Hz Technical Datasheet","Octagon R410A line, 4FDC-5Y .. 4NDC-20Y","KP-106-2",8,"Indexed","docs/kp-106-2.pdf"],
+  ["Compressor module for reciprocating compressors — IQ MODULE CM-RC-02 — Technical Information","CM-RC-02 IQ Module, all reciprocating compressor series","KT-240-3",100,"Indexed","docs/kt-240-3.pdf"],
+  ["Extension board A (CM-IO-A ADVANCED) for compressor module CM-RC-02 — Technical Information","CM-IO-A — capacity control, RI system, OLM-IQ","KT-241-2",68,"Indexed","docs/kt-241-2-2.pdf"],
+  ["Extension board B (CM-IO-B PREMIUM) for compressor module CM-RC-02 — Technical Information","CM-IO-B — capacity control, RI, application-limits monitoring, ECO","KT-242-2",88,"Indexed","docs/kt-242-2.pdf"],
+  ["Quick Start Guide — CM-RC-02 Compressor Operation Mode","CM-RC-02 minimum wiring & BEST operating-mode setup","QSG-CM-RC-02",2,"Indexed","docs/QSG_CM_RC_02_compessor_operation_mode-_minimum-required-wiring.pdf"]
 ];
 
 const CHIPS = {
@@ -884,9 +884,8 @@ class Component extends DCLogic {
       fleetQ: st.fleetQ,
       onFleetQ: (e) => this.setState({fleetQ: e.target.value}),
       fleetList,
-      docs: DOCS.map(([title, covers, pn, pages, status, thumb], i) => ({
-        id: i, title, covers, pn, pages, status,
-        hasThumb: !!thumb, thumb: thumb || "",
+      docs: DOCS.map(([title, covers, pn, pages, status, url], i) => ({
+        id: i, title, covers, pn, pages, status, url,
         bg: status === "Indexed" ? "#e6f4ed" : "#fdf4e3",
         fg: status === "Indexed" ? "#2E7A16" : "#8a5a00"
       })),
